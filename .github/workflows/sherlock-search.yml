@@ -1,6 +1,10 @@
 name: Sherlock Username Search
 
 on:
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/sherlock-search.yml"
   workflow_dispatch:
     inputs:
       usernames:
@@ -18,6 +22,7 @@ concurrency:
 
 jobs:
   search:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[run-sherlock]')
     name: Search social networks
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -37,7 +42,7 @@ jobs:
 
       - name: Validate input and run search
         env:
-          SEARCH_USERNAMES: ${{ inputs.usernames }}
+          SEARCH_USERNAMES: ${{ inputs.usernames || 'grantgust' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -68,7 +73,7 @@ jobs:
       - name: Write run summary
         if: always()
         env:
-          SEARCH_USERNAMES: ${{ inputs.usernames }}
+          SEARCH_USERNAMES: ${{ inputs.usernames || 'grantgust' }}
         shell: bash
         run: |
           {
